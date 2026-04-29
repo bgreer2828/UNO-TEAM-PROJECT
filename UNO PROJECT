@@ -1,8 +1,4 @@
 % UNO PROJECT CODE
-%108 cards, 19 blue cards, 19 green cards, 19 red cards, 19 yellow cards, 8 skip cards 2 red 2 yellow 2 green 2 blue
-%8 reverse 2 red 2 blue 2 yellow 2 green
-%8 2+ draw 2 red, 2 blue, 2 yellow 2 green
-%4 wild cards, 4 4+ wild cards
 %Your code must have meaningful comments.
 %3. Prevent duplicate cards beyond what is in a standard UNO deck.
 %4. The game must automatically keep track of the next player in accordance to the UNO rules.
@@ -26,12 +22,21 @@ D2C = [D2red,D2red,D2blue,D2blue,D2green,D2green,D2yellow,D2yellow];
 WC = [W1,W2,W3,W4];
 WD4C = [D41,D42,D43,D44];
 
+%each player gets 7 cards
+%player to the left plays first 
+
 %method for reverse
+%reverse card can only be played on a matching color or another on another
+%reverse card
 if card == "RevC"
     % Reverse the order of the cards in RevC
     RevC = flip(RevC);
 end
-%method for draw 2 
+
+
+%method for draw 2
+%the next person will draw 2 cards and skip their turn and it can only be
+%played on another color or another draw 2 card
 if card == "D2C"
     % Draw two cards from the D2C deck
     drawnCards = D2C(1:2);
@@ -39,16 +44,28 @@ if card == "D2C"
 end
 
 %method for wild cards
+%can change the color of the current color, the person to the left of the
+%dealer will be picking the color
 if == "WC"
+    colorChange = ;
+
+
 
 %method for wild draw 4
+%can change the color of the current color and skip them while also getting
+%+4 cards, if its the first card being played then it will be discarded, 
 if == "WD4C"
     % Draw 4 cards from the WD4C
     drawnCards =  
     WD4C() = [];
 
 %method for the skip
-
+%the person next to play will be skipped, if the card is drawn at the
+%beginning the person to the left of the dealer is skipped, can only be
+%played with the same color or another skip
+if == "SC"
+    skipTurn = true;
+end
 %method for wild cards
 
 %method for wild draw 4
