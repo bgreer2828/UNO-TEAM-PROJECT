@@ -16,15 +16,15 @@
 %pile. The top most card should be left in the discard pile so play can be continued.
 %11. The game must complete one full hand of UNO and then ask if another hand should be
 %played.
-RC = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
-BC = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
-GC = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
-YC = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
-SC = [red,red,blue,blue,green,green,yellow,yellow];
-RevC = [red,red,blue,blue,green,green,yellow,yellow];
-D2C = [red,red,blue,blue,green,green,yellow,yellow];
-WC = [1,2,3,4];
-WD4C = [1,2,3,4];
+RC = [R0,R1,R1,R2,R2,R3,R3,R4,R4,R5,R5,R6,R6,R7,R7,R8,R8,R9,R9];
+BC = [B0,B1,B1,B2,B2,B3,B3,B4,B4,B5,B5,B6,B6,B7,B7,B8,B8,B9,B9];
+GC = [G0,G1,G1,G2,G2,G3,G3,G4,G4,G5,G5,G6,G6,G7,G7,G8,G8,G9,G9];
+YC = [Y0,Y1,Y1,Y2,Y2,Y3,Y3,Y4,Y4,Y5,Y5,Y6,Y6,Y7,Y7,Y8,Y8,Y9,Y9];
+SC = [Sred,Sred,Sblue,Sblue,Sgreen,Sgreen,Syellow,Syellow];
+RevC = [Revred,Revred,Revblue,Revblue,Revgreen,Revgreen,Revyellow,Revyellow];
+D2C = [D2red,D2red,D2blue,D2blue,D2green,D2green,D2yellow,D2yellow];
+WC = [W1,W2,W3,W4];
+WD4C = [D41,D42,D43,D44];
 
 %method for reverse
 if card == "RevC"
