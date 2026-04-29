@@ -17,3 +17,12 @@
 %pile. The top most card should be left in the discard pile so play can be continued.
 %11. The game must complete one full hand of UNO and then ask if another hand should be
 %played.
+Red Cards = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
+Blue Cards = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
+Green Cards = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
+Yellow Cards = [0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9];
+Skip Cards = [red,red,blue,blue,green,green,yellow,yellow];
+Reverse Cards = [red,red,blue,blue,green,green,yellow,yellow];
+Draw 2 Cards = [red,red,blue,blue,green,green,yellow,yellow];
+Wild Cards = [1,2,3,4];
+Wild Draw 4 Cards = [1,2,3,4];
