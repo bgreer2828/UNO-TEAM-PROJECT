@@ -26,11 +26,28 @@ D2C = [red,red,blue,blue,green,green,yellow,yellow];
 WC = [1,2,3,4];
 WD4C = [1,2,3,4];
 
-%input for the amount of players 3 to 10 players
-
 %method for reverse
-
+if card == "RevC"
+    % Reverse the order of the cards in RevC
+    RevC = flip(RevC);
+end
 %method for draw 2 
+if card == "D2C"
+    % Draw two cards from the D2C deck
+    drawnCards = D2C(1:2);
+    D2C(1:2) = []; % Remove drawn cards from the deck
+end
+
+%method for wild cards
+if == "WC"
+
+%method for wild draw 4
+if == "WD4C"
+    % Draw 4 cards from the WD4C
+    drawnCards =  
+    WD4C() = [];
+
+%method for the skip
 
 %method for wild cards
 
