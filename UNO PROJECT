@@ -4,7 +4,6 @@
 %8 2+ draw 2 red, 2 blue, 2 yellow 2 green
 %4 wild cards, 4 4+ wild cards
 %Your code must have meaningful comments.
-%2. The game must ask how many players. This value should be between 3 and 10.
 %3. Prevent duplicate cards beyond what is in a standard UNO deck.
 %4. The game must automatically keep track of the next player in accordance to the UNO rules.
 %5. The game must correctly handle all of the special cards.
@@ -26,3 +25,15 @@ RevC = [red,red,blue,blue,green,green,yellow,yellow];
 D2C = [red,red,blue,blue,green,green,yellow,yellow];
 WC = [1,2,3,4];
 WD4C = [1,2,3,4];
+
+%input for the amount of players 3 to 10 players
+
+%method for reverse
+
+%method for draw 2 
+
+%method for wild cards
+
+%method for wild draw 4
+
+%method for the skip
