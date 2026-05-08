@@ -1,0 +1,781 @@
+function OfficialUnoCode()
+clc;
+clear;
+
+% This is the code for Team Project #2 for Group 5: London Dyer, Brennan Greer and Ricardo Viezca.
+% This program plays one full hand of UNO and uses a standard 108 card UNO deck.
+% The project was split into three overall parts where London managed the
+% deck creation, shuffle, and discard. Brennan managed the next player and
+% direction of the game flow. And Ricardo put together the rules and card values
+% for the overall game. The game uses a standard 108 card UNO deck and
+% players take turns until the first person has completelty ran out of
+% cards. 
+
+% _____MATLAB UNO GAME_____
+
+playAgain = 1;
+
+% This loops is set up to let the user play another hand after the first
+% hand has been completed. By pressing one they agree to start the whole
+% game over. 
+
+while playAgain == 1
+
+    clc;
+
+    % ___MAIN MENU___
+    % This input displays the main menu options. Users will be given the
+    % choice to see the rules of this verison of UNO or automatically start
+    % the game.
+
+    fprintf('\nMATLAB UNO GAME\n\n');
+    fprintf('1. Start Game\n');
+    fprintf('2. View Rules\n');
+
+    menuChoice = input('Enter choice: ');
+
+    % While the main menu is up the loop will continue executing until they
+    % choose to either start the game or keep viewing the rules
+
+    while menuChoice ~= 1 && menuChoice ~= 2
+
+        fprintf('Invalid choice.\n');
+
+        menuChoice = input('Enter choice: ');
+    end
+
+    % ___RULES MENU___
+    % This menu will be shown only if the user picks the number 2. A list
+    % of rules will be shown and then the user can continue into the game
+    % loop
+
+    if menuChoice == 2
+
+        clc;
+
+        fprintf('\nUNO RULES\n\n');
+        fprintf('Play cards with either the same color or number value.\n\n');
+        fprintf('Skip: The next player will lose their turn.\n');
+        fprintf('Reverse: changes the direction of the game.\n');
+        fprintf('Draw Two: The next player must draw 2 cards.\n');
+        fprintf('Wild: Player that places the card must choose the new color.\n');
+        fprintf('Wild Draw Four: Player must choose a new color and the next player must draw 4 cards.\n');
+        fprintf('First player with zero cards wins the game.\n\n');
+
+        input('Press enter to continue.');
+
+        clc;
+
+    end
+
+    % ___PLAYER AMOUNT SELECTION___
+    % Upon choosing 1 or 2 the user will be asked to input the amount of
+    % players and it needs to be between 3 and 10 players.
+
+    numPlayers = input('Enter number of players (3-10): ');
+
+    while numPlayers < 3 || numPlayers > 10 
+        fprintf('Invalid number of players.\n');
+        numPlayers = input('Enter number of players (3-10): ');
+    end 
+
+    % ___STORE PLAYERS NAMES___
+    % To make the game easier to follow players can input their names to
+    % make turns flow smoother and it be easier to keep up with skips and
+    % reverses. 
+
+    playerNames= cell(1,numPlayers);
+
+    for i = 1:numPlayers
+
+        playerNames{i} = input(['Enter name for Player ' num2str(i) ': '],'s');
+    end 
+
+    % ___CREATE AND SHUFFLE DECK___
+    % Create the UNO deck and shuffle the cards before the hands are dealt
+    % to each player. This ensures a random start to the game and a new
+    % first card. 
+    deck = createDeck();
+
+    deck = shuffleDeck(deck);
+
+    % ___DEAL CARDS___
+    % Each player is dealt 7 cards to start the game
+
+    [handColor, handValue, handCount, deck] = dealCards(deck,numPlayers);
+
+    % ___FIRST TOP CARD___
+    % To start the game the first card will be flipped over coming from the
+    % discard pile. 
+
+    topColor = deck(1,1);
+    topValue = deck(1,2);
+
+    deck(1,:) = [];
+
+    % if the first card is a wild card, it must be put back into the deck
+    % and a new first top card will be drawn. 
+    while topColor == 5
+
+        deck = [deck; topColor topValue];
+
+        deck = shuffleDeck(deck);
+
+        topColor = deck(1,1);
+        topValue = deck(1,2);
+
+        deck(1,:) = [];
+
+    end 
+
+    % The discard pile will be updated with the first card that was flipped
+    % over before.
+
+    discardPile = [topColor topValue];
+
+    % ___GAME RULES___
+    % This section sets the first player, direction, and game status for
+    % this loop of the game. 
+    
+    currentPlayer = 1;
+
+    % 1 means that the play moves forwrad in a clockwise direction. 
+    % -1 means the play moves backward in a counterclockwise direction.
+    direction = 1;
+
+    gameOver = 0;
+
+    % ___FIRST CARD EFFECTS___
+    % To ensure a fair game the first card cannot be a skip, reverse, or
+    % Draw Two card. 
+
+    if topValue == 10
+
+        fprintf('First Card is Skip.\n');
+
+        currentPlayer = nextPlayer(currentPlayer,direction,numPlayers);
+
+    elseif topValue == 11
+        
+        fprintf('First card is Reverse.\n');
+
+        direction = direction * -1;
+
+    elseif topValue == 12 
+
+        fprintf('First Card is Draw Two.\n');
+        drawPlayer = currentPlayer;
+
+        drawPlayer = currentPlayer;
+
+        for i = 1:2
+            [handColor, handValue, handCount, deck, discardPile] = drawCard(handColor, handValue, handCount, drawPlayer, deck, discardPile);
+        end
+
+        currentPlayer = nextPlayer(currentPlayer,direction,numPlayers);
+
+    else fprintf('First Card is: ');
+        printCard(topColor,topValue);
+        fprintf('\n');
+
+    end
+
+    input('Press Enter to begin game.');
+
+    % ___MAIN GAME LOOP___
+    % Players will continue to take turns until a player wins the hand.
+    % That means that they are left with zero cards. 
+
+    while gameOver == 0
+
+        clc;
+
+        % Show whose turn is currently is.
+        fprintf('\n%s TURN\n\n', playerNames{currentPlayer});
+
+        % Show the top card on the discard pile, so the card that the
+        % player must have either the same value of or the same color of. 
+        fprintf('Top Card: ');
+        printCard(topColor,topValue);
+        fprintf('\n\n');
+
+        % Show only the current player's hand.
+        displayHand(handColor, handValue, handCount, currentPlayer);
+
+        fprintf('\n');
+
+        % Ask the player to eaither play a card, draw a card, or quit the
+        % whole program. 
+
+        choice = input('Choose card number, 0 to draw, or -1 to quit: ');
+        if choice == -1
+
+            gameOver = 1;
+            playAgain = 0;
+
+            fprintf('\nGame ended.\n');
+
+            break;
+        end 
+
+        % Check that the player chose a card with the same color and or
+        % value, used a wild, or pressed 0 to draw a new card. Also
+        % includes the -1 to quit the game. 
+
+        while choice < 0 || choice > handCount(currentPlayer)
+
+            fprintf('Invalid choice.\n');
+
+            choice = input('Choose card number or 0 to draw: ');
+
+        end 
+
+
+        % ___DRAW CARD___
+        % If the player chooses zero then they receive one card from the
+        % deck. This can be either stored or played right away if it is a
+        % playable card.
+
+        if choice == 0 
+
+            oldCount = handCount(currentPlayer);
+
+            [handColor, handValue, handCount, deck, discardPile] = drawCard(handColor, handValue, handCount, currentPlayer, deck, discardPile);
+
+            drawnColor = handColor(currentPlayer, oldCount + 1);
+            drawnValue = handValue(currentPlayer, oldCount + 1);
+
+            fprintf('\nYou drew: ');
+            printCard(drawnColor, drawnValue);
+            fprintf('\n');
+
+            validDraw = isValidPlay(drawnColor, drawnValue, topColor, topValue);
+
+            % If the drawn card is playable then the player has the option
+            % to either play it or save it for later on in the game. 
+
+            if validDraw == 1
+
+                playDrawn = input('Play this card? 1=yes 0=no: ');
+
+                if playDrawn == 1
+
+                    choice = handCount(currentPlayer);
+
+                else 
+
+                    choice = -1;
+
+                end 
+
+            else 
+                choice = -1;
+
+            end 
+
+        end 
+
+        % ___CARD PLAY___
+        % This section handles what happens when a player chooses a card
+        % from their current hand. 
+
+        if choice >= 1
+
+            cardColor = handColor(currentPlayer, choice);
+            cardValue = handValue(currentPlayer, choice);
+
+            % Check if the card the user selcted is allowed to be played
+            % based on the top card of the pile.
+
+            valid = isValidPlay(cardColor,cardValue,topColor,topValue);
+
+            if valid == 1
+
+                % Update the top card to the card that was just selected by
+                % the previous user. 
+
+                topColor = cardColor;
+                topValue = cardValue;
+
+                % Add the played card to the discard pile 
+
+                discardPile = [discardPile; topColor topValue ];
+
+                % Remove the played card from the current hand of the user
+                % that selected that card. 
+
+                for i = choice:handCount(currentPlayer)-1
+
+                    handColor(currentPlayer,i) = handColor(currentPlayer, i+1);
+                    handValue(currentPlayer,i) = handValue(currentPlayer, i+1);
+
+                end
+                    % Clear the old last card spot after shifting the cards
+                    % to the left.
+
+                    handColor(currentPlayer, handCount(currentPlayer)) = 0;
+                    handValue(currentPlayer,handCount(currentPlayer)) = 0;
+                    
+                    % Decrease the number of cards in the players hand
+                    handCount(currentPlayer) = handCount(currentPlayer) -1;
+
+                    % Print UNO to the screen if the player has one card
+                    % left.
+                    checkUNO(handCount, currentPlayer);
+
+                    % ___WILd CARD___
+                    % If a wild card is put down by a player, they must
+                    % choose a new color for the next user to match. 
+
+                    if topValue == 13 || topValue == 14
+
+                        fprintf('\nChoose a color:\n');
+                        fprintf('1 = Red\n');
+                        fprintf('2 = Blue\n');
+                        fprintf('3 = Green\n');
+                        fprintf('4 = Yellow\n');
+
+                        newColor = input('Enter color: ');
+
+                        % The user must choose a valid color either red,
+                        % blue, green, or yellow. 
+
+                        while newColor < 1 || newColor > 4
+
+                            fprintf('Invalid Color.\n');
+
+                            newColor = input('Enter color: ');
+
+                        end 
+
+                        topColor = newColor;
+
+                    end
+
+                    % ___WIN CHECK___
+                    % End the hand if the current player has no cards left in their hand.  
+
+                    if handCount(currentPlayer) == 0 
+
+                        clc;
+
+                        fprintf('\n%s WINS THE HAND!!!\n\n', playerNames{currentPlayer});
+
+                        gameOver = 1;
+
+                    else 
+                        % ___SPECIAL CARDS___
+                        % This section applies the action the card has if
+                        % either a wild, draw, reverse or skip is placed by
+                        % the user
+
+                        % ___SKIP___
+                        % Skip the next players turn.
+
+                        if topValue == 10
+
+                            currentPlayer = nextPlayer(currentPlayer, direction, numPlayers);
+                            currentPlayer = nextPlayer(currentPlayer, direction, numPlayers);
+
+                        % ___REVERSE___
+                        % Change the overall direction of play.
+
+                        elseif topValue == 11
+
+                            direction = direction * -1;
+
+                            currentPlayer = nextPlayer(currentPlayer,direction,numPlayers);
+
+                        % ___DRAW TWO___
+                        % The next player draws two cards and must give up
+                        % their turn. 
+
+                        elseif topValue == 12
+
+                            drawPlayer = nextPlayer(currentPlayer,direction, numPlayers);
+
+                            for i = 1:2
+
+                                [handColor, handValue, handCount, deck, discardPile] = drawCard(handColor, handValue, handCount, drawPlayer, deck, discardPile);
+
+                            end
+
+                            fprintf('Player %0.0f now was %0.0f cards.\n', drawPlayer, handCount(drawPlayer));
+                            input('Press Enter to continue.');
+
+                            currentPlayer = nextPlayer(drawPlayer, direction,numPlayers);
+
+                         % ___WILD DRAW FOUR___
+                         % The next player draws four cards and also has to
+                         % give up their turn.
+
+                        elseif topValue == 14
+
+                            drawPlayer = nextPlayer(currentPlayer,direction,numPlayers);
+
+                            for i = 1:4
+                                [handColor, handValue, handCount, deck, discardPile] = drawCard(handColor, handValue, handCount, drawPlayer, deck, discardPile);
+                            end 
+
+                            fprintf('Player %0.0f now has %0.0f cards.\n', drawPlayer, handCount(drawPlayer));
+                            input('Press Enter to continue.');
+
+                            currentPlayer = nextPlayer(drawPlayer, direction,numPlayers);
+
+                        else 
+
+                            % Move to the next player if there is not a
+                            % special card being played. 
+
+                            currentPlayer = nextPlayer(currentPlayer, direction, numPlayers);
+
+                        end 
+
+                    end 
+
+            else 
+
+                % Tell the user if the card that they chose cannot be
+                % played. 
+
+                fprintf('\nInvalid play.\n');
+
+                input('Press Enter to continue.');
+
+            end 
+
+            % If the player did not play then this moves the game onto the
+            % next player. 
+
+        elseif choice == -1
+
+            currentPlayer = nextPlayer(currentPlayer,direction, numPlayers);
+
+        end 
+
+    end 
+
+    % ___ROUND SUMMARY___
+    % The round summary tells the players how many cards they were left
+    % with at the end of the game.
+
+    fprintf('\nROUND SUMMARY\n\n');
+
+    for i = 1:numPlayers
+        fprintf('%s has %0.0f cards left.\n', playerNames{i},handCount(i));
+
+    end 
+
+    fprintf('\n');
+
+    % ___PLAY AGAIN___
+    % Ask if the user wants to play another hand or end the game entierly.
+
+    playAgain = input('Play another hand? 1=yes 0=no: ');
+
+end
+
+fprintf('\nThanks for Playing UNO\n');
+
+end 
+
+% _____FUNCTION CREATIONS_____
+
+% ___FUNCTION : CREATE DECK___
+% Builds the full 108 card UNO deck using the correct number of each card
+% color and their corresponding values. 
+
+function deck = createDeck()
+
+deck = [];
+
+for color = 1:4
+
+    % Each color of card has only one zero in the deck.
+
+    deck = [deck; color 0];
+
+    % Each color of card has two cards for each value of 1 through 9.
+    for value = 1:9
+
+        deck = [deck; color value];
+        deck = [deck; color value];
+
+    end
+
+    % Each color has two skip cards for the entire deck.
+
+    deck = [deck; color 10];
+    deck = [deck; color 10];
+
+    % Each color has two reverse cards for their color. 
+
+    deck = [deck; color 11];
+    deck = [deck; color 11];
+
+    % Each color has two draw two cards for the colors in the deck. 
+
+    deck = [deck; color 12];
+    deck = [deck; color 12];
+
+end 
+
+% Add four normal wild cards. 
+
+for i = 1:4
+
+    deck  = [deck; 5 13];
+
+end 
+
+% Add four wild draw four cards.
+for i = 1:4 
+
+    deck = [deck; 5 14];
+
+end 
+end 
+ 
+
+% ___FUNCTION SHUFFLE DECK___
+% Shuffles the deck by swapping the card positions in a loop. 
+
+function deck = shuffleDeck(deck)
+
+numCards = size(deck,1);
+
+for i = numCards:-1:2
+
+    j = randi(i);
+
+    temp = deck(i,:);
+
+    deck(i,:) = deck(j,:);
+    deck(j,:) = temp;
+    
+end 
+end 
+
+% ___FUNCTION DEAL CARDS___
+% Deals the first 7 cards to how many players that are playing and then
+% removes those cards from the remaining deck. 
+
+function [handColor, handValue, handCount, deck] = dealCards(deck,numPlayers)
+
+handColor = zeros(numPlayers,108);
+handValue = zeros(numPlayers,108);
+
+handCount = zeros(1,numPlayers);
+
+for card = 1:7
+
+    for player = 1:numPlayers
+
+        handCount(player) = handCount(player) + 1;
+
+        handColor(player,handCount(player)) = deck(1,1);
+        handValue(player, handCount(player)) = deck(1,2);
+
+        deck(1,:) = [];
+
+    end 
+
+end 
+
+end 
+
+
+% ___Function Draw Card___
+% Adds one of the cards from the draw pile into the hand of the current
+% player only if they choose to do so. 
+
+    function [handColor, handValue, handCount, deck, discardPile] = drawCard(handColor, handValue, handCount, player, deck, discardPile)
+
+% If the draw pile becomes empty this will reshfufle the draw and sicard
+% pile into a new draw pile. 
+
+    if size(deck,1) == 0 
+
+        topDiscard = discardPile(end,:);
+
+        newDeck = discardPile(1:end-1,:);
+
+        deck = shuffleDeck(newDeck);
+
+        discardPile = topDiscard;
+
+    end 
+
+    % Add the top card from the deck to the player's hand. 
+
+    handCount(player) = handCount(player) + 1;
+
+    handColor(player,handCount(player)) = deck(1,1);
+    handValue(player, handCount(player)) = deck(1,2);
+
+
+    % Remove the drawn card from the draw pile.
+
+
+    deck(1,:) = [];
+
+    fprintf('Player %0.0f drew a card.\n', player);
+
+    end
+
+% ___FUNCTION: DISPLAY HAND___
+% Only displays the current player's hand to the game screen.
+
+
+    function displayHand(handColor,handValue,handCount,player)
+
+    fprintf('Your Hand:\n\n');
+
+    for i = 1:handCount(player)
+
+        fprintf('%0.0f) ', i);
+
+        printCard(handColor(player,i),handValue(player,i));
+
+        fprintf('\n');
+
+    end
+    end
+
+% ___FUNCTION VALID PLAY CHECK___
+% Makes sure the rules of the game are being followed so the card the user
+% selects must match the top card by color, value, or wild card. 
+
+    function valid = isValidPlay(cardColor,cardValue,topColor,topValue)
+
+        if cardColor == topColor
+
+            valid = 1;
+
+        elseif cardValue == topValue
+
+            valid = 1;
+
+        elseif cardColor == 5
+
+            valid = 1;
+
+        else 
+            valid = 0;
+
+        end 
+    end 
+
+
+% ___FUNCTION CHECK UNO___
+% Prints UNO to that players screen when they are left with only one card. 
+    function checkUNO(handCount,player)
+
+        if handCount(player) == 1
+
+            fprintf('\nUNO!\n');
+
+        end  
+    end 
+
+
+% ___FUNCTION PRINT CARD___
+% Converts the card numbers into readable card names that make it easy for
+% the game to be played. 
+
+    function printCard(color,value)
+
+        % Wild cards print seperately so that they are not shown as Wild
+        % both times. 
+
+        if value == 13
+
+            fprintf('Wild');
+
+            % Show the color that was chosen by the user onto the top of
+            % the deck.
+
+            if color == 1
+               fprintf(' - Red ');
+           elseif color == 2
+                   fprintf(' - Blue ');
+           elseif color == 3
+               fprintf(' - Green ');
+           elseif color == 4
+               fprintf(' - Yellow ');
+            end 
+
+        elseif value ==14
+
+            fprintf('Wild Draw Four');
+
+            % Show the chosen color if the wild draw four has been chosen
+            % to have a color. 
+
+            if color == 1
+               fprintf(' - Red ');
+           elseif color == 2
+                   fprintf(' - Blue ');
+           elseif color == 3
+               fprintf(' - Green ');
+           elseif color == 4
+               fprintf(' - Yellow ');
+            end 
+
+        else 
+            % Print the color for the normal colored cards. 
+
+           if color == 1
+               fprintf('Red ');
+           elseif color == 2
+                   fprintf('Blue ');
+           elseif color == 3
+               fprintf('Green ');
+           elseif color == 4
+               fprintf('Yellow ');
+
+           end 
+
+           % Print the value or action name for the normal cards in the
+           % hand. 
+
+           if value >= 0 && value<=9
+               fprintf('%0.0f',value);
+
+           elseif value == 10
+               fprintf('Skip');
+
+           elseif value == 11
+               fprintf('Reverse');
+           elseif value == 12 
+               fprintf('Draw Two');
+           
+           end 
+
+        end 
+        end 
+
+        % ___Function Next Player___
+        % Moves to the next player based on the direction of the game. 
+
+        function next = nextPlayer(currentPlayer,direction,numPlayers)
+
+            next = currentPlayer + direction;
+
+            % Wrap around to to the first player if the count goes past the
+            % very last player in the loop.
+
+            if next > numPlayers
+                next = 1;
+
+            % Wrap around to the last player if the count goes below the
+            % very first player. 
+
+            elseif next < 1
+
+            next = numPlayers;
+
+        end 
+        end 
+
+
